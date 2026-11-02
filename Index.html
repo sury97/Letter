@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>투투에게 전하는 윈트의 편지 🤍</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #fdf8f5;
+      font-family: 'Gowun Batang', serif;
+      color: #4a3b32;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* 배경 하트 & 입자 애니메이션 */
+    .bg-hearts {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .heart-particle {
+      position: absolute;
+      color: rgba(255, 182, 193, 0.6);
+      font-size: 1.2rem;
+      animation: floatUp 8s linear infinite;
+      bottom: -20px;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(-105vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* 메인 컨테이너 */
+    .container {
+      width: 100%;
+      max-width: 500px;
+      padding: 20px;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* 오프닝 화면 (봉투) */
+    .envelope-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 80vh;
+      width: 100%;
+      text-align: center;
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .envelope-screen.hidden {
+      opacity: 0;
+      transform: translateY(-50px);
+      pointer-events: none;
+      display: none;
+    }
+
+    .envelope-wrapper {
+      position: relative;
+      width: 280px;
+      height: 190px;
+      background: #e8c3b9;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      cursor: pointer;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease;
+    }
+
+    .envelope-wrapper:hover {
+      transform: scale(1.03);
+    }
+
+    .envelope-flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-left: 140px solid transparent;
+      border-right: 140px solid transparent;
+      border-top: 100px solid #d9ad9e;
+      transform-origin: top;
+      transition: transform 0.6s ease;
+      z-index: 3;
+    }
+
+    .envelope-wrapper.open .envelope-flap {
+      transform: rotateX(180deg);
+    }
+
+    .envelope-seal {
+      position: absolute;
+      width: 45px;
+      height: 45px;
+      background: #c25959;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      z-index: 4;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .open-btn {
+      background: #d97a7a;
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      font-size: 1.1rem;
+      font-family: 'Gowun Batang', serif;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(217, 122, 122, 0.4);
+      transition: all 0.3s ease;
+      animation: pulse 2s infinite;
+    }
+
+    .open-btn:hover {
+      background: #c25959;
+      transform: translateY(-2px);
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    /* 편지 본문 컨텐츠 (처음엔 숨김) */
+    .content-screen {
+      display: none;
+      opacity: 0;
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+      transition: opacity 1s ease;
+    }
+
+    .content-screen.visible {
+      display: flex;
+      opacity: 1;
+    }
+
+    /* 상단 헤더 */
+    .header-title {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #8c4343;
+      margin: 20px 0 10px 0;
+      text-align: center;
+    }
+
+    .sub-title {
+      font-size: 0.95rem;
+      color: #887265;
+      margin-bottom: 25px;
+    }
+
+    /* 사진 갤러리 (폴라로이드 스타일) */
+    .gallery-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #6e4e3a;
+      margin: 20px 0 15px 0;
+      align-self: flex-start;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      width: 100%;
+      margin-bottom: 35px;
+    }
+
+    .polaroid {
+      background: white;
+      padding: 10px 10px 25px 10px;
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transform: rotate(calc(var(--r, 0) * 1deg));
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .polaroid:hover {
+      transform: scale(1.05) rotate(0deg) !important;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      z-index: 2;
+    }
+
+    .polaroid img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 2px;
+      background-color: #f0f0f0;
+    }
+
+    .polaroid-caption {
+      font-family: 'Nanum Pen Script', cursive;
+      font-size: 1.1rem;
+      text-align: center;
+      color: #665246;
+      margin-top: 8px;
+    }
+
+    /* 편지지 영역 */
+    .letter-paper {
+      background: #fffdfa;
+      width: 100%;
+      padding: 30px 22px;
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+      border: 1px solid #f0e6df;
+      line-height: 1.8;
+      font-size: 1.02rem;
+      color: #3b2e27;
+      position: relative;
+      margin-bottom: 40px;
+    }
+
+    .letter-paper p {
+      margin-bottom: 18px;
+      word-break: keep-all;
+    }
+
+    .letter-footer {
+      text-align: right;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #8c4343;
+      margin-top: 30px;
+    }
+
+    /* 모달 (사진 확대) */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal img {
+      max-width: 95%;
+      max-height: 85vh;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(255,255,255,0.2);
+    }
+
+    /* 푸터 */
+    footer {
+      margin-bottom: 30px;
+      font-size: 0.85rem;
+      color: #a39085;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 배경 Floating 하트 -->
+  <div class="bg-hearts" id="bgHearts"></div>
+
+  <div class="container">
+    
+    <!-- 1. 오프닝 봉투 화면 -->
+    <div class="envelope-screen" id="envelopeScreen">
+      <div style="font-size: 1.2rem; color: #7a6254; margin-bottom: 20px;">
+        투투를 위한 특별한 편지가 도착했어 💌
+      </div>
+      
+      <div class="envelope-wrapper" id="envelope" onclick="openLetter()">
+        <div class="envelope-flap"></div>
+        <div class="envelope-seal">🤍</div>
+      </div>
+
+      <button class="open-btn" onclick="openLetter()">편지 열어보기 ✉️</button>
+    </div>
+
+    <!-- 2. 편지 & 사진 본문 화면 -->
+    <div class="content-screen" id="contentScreen">
+      
+      <div class="header-title">To. 투투에게 🤍</div>
+      <div class="sub-title">우리 함께한 10년, 그리고 앞으로의 모든 날들에게</div>
+
+      <!-- 사진 갤러리 (1.jpg ~ 9.jpg) -->
+      <div class="gallery-title">📸 함께 쌓아온 우리의 추억들</div>
+      <div class="photo-grid">
+        <div class="polaroid" style="--r: -3;" onclick="openModal('1.jpg')">
+          <img src="1.jpg" alt="추억 사진 1">
+          <div class="polaroid-caption">소중한 우리 추억 1</div>
+        </div>
+        <div class="polaroid" style="--r: 2;" onclick="openModal('2.jpg')">
+          <img src="2.jpg" alt="추억 사진 2">
+          <div class="polaroid-caption">소중한 우리 추억 2</div>
+        </div>
+        <div class="polaroid" style="--r: -2;" onclick="openModal('3.jpg')">
+          <img src="3.jpg" alt="추억 사진 3">
+          <div class="polaroid-caption">소중한 우리 추억 3</div>
+        </div>
+        <div class="polaroid" style="--r: 4;" onclick="openModal('4.jpg')">
+          <img src="4.jpg" alt="추억 사진 4">
+          <div class="polaroid-caption">소중한 우리 추억 4</div>
+        </div>
+        <div class="polaroid" style="--r: -4;" onclick="openModal('5.jpg')">
+          <img src="5.jpg" alt="추억 사진 5">
+          <div class="polaroid-caption">소중한 우리 추억 5</div>
+        </div>
+        <div class="polaroid" style="--r: 1;" onclick="openModal('6.jpg')">
+          <img src="6.jpg" alt="추억 사진 6">
+          <div class="polaroid-caption">소중한 우리 추억 6</div>
+        </div>
+        <div class="polaroid" style="--r: -3;" onclick="openModal('7.jpg')">
+          <img src="7.jpg" alt="추억 사진 7">
+          <div class="polaroid-caption">소중한 우리 추억 7</div>
+        </div>
+        <div class="polaroid" style="--r: 3;" onclick="openModal('8.jpg')">
+          <img src="8.jpg" alt="추억 사진 8">
+          <div class="polaroid-caption">소중한 우리 추억 8</div>
+        </div>
+        <div class="polaroid" style="--r: -1; grid-column: span 2; width: 65%; justify-self: center;" onclick="openModal('9.jpg')">
+          <img src="9.jpg" alt="추억 사진 9">
+          <div class="polaroid-caption">소중한 우리 추억 9 ✨</div>
+        </div>
+      </div>
+
+      <!-- 편지 본문 -->
+      <div class="letter-paper">
+        <p>To. 투투에게 🤍</p>
+        <p>원래 선물 주면서 편지도 같이 써서 주려고 했는데, 결국 못 썼네 ㅠㅠ 미안해 ㅋㅋㅋ</p>
+        <p>사실 너한테 편지 써야겠다고 생각하고 있었어. 미얀마어로 쓰면 내 마음을 제대로 표현하기가 조금 어색할 것 같아서 그냥 한국어로 쓸게. ㅋㅋㅋ</p>
+        <p>우리가 알고 지낸 지도 벌써 10년이 훌쩍 넘었네. 생각해 보면 정말 긴 시간이다. 처음 만났을 때는 우리가 이렇게 오랜 시간을 함께하게 될 줄 알았을까? ㅋㅋㅋ</p>
+        <p>솔직히 네가 미얀마로 돌아간다고 했을 때 정말 많이 슬펐어. 언젠가는 이런 날이 올 수도 있겠다고 생각은 했지만, 막상 그날이 다가오니까 생각보다 마음이 복잡하더라.</p>
+        <p>사람은 언젠가 각자의 길을 걸어가게 된다는 걸 누구보다 잘 알고 있어. 그래서 네가 내린 선택을 존중하고 싶었고, 무엇보다 네가 원하는 삶을 살아가길 바라는 마음으로 응원해 주고 싶었어.</p>
+        <p>물론 아쉽고 서운한 마음은 어쩔 수 없지만 ㅋㅋㅋ 그래도 우리는 어떻게든 잘 살아갈 거라고 믿어.</p>
+        <p>가만히 생각해 보면 우리 참 많은 시간을 함께 보냈더라.</p>
+        <p>서로 성격도 가끔 다르고 안 맞는 부분도 있었고 서운했던 순간들도 있었지. 지금 생각하면 별것도 아닌 일로 투닥거리기도 했고 ㅋㅋㅋ 그때는 왜 그렇게 이해하지 못했을까 싶기도 해.</p>
+        <p>그런데 신기하게도 그런 시간들까지 전부 우리의 추억이 됐네.</p>
+        <p>기쁜 일도, 힘든 일도, 서로에게 말 못 할 고민도 나누면서 각자의 성장 과정을 지켜봤잖아. 어쩌면 우리는 서로의 인생에서 가장 서툴렀던 시절부터 조금씩 어른이 되어가는 모습을 함께 지켜본 사이인 것 같아.</p>
+        <p>내 20대의 많은 순간에 네가 있었다는 게 참 고맙고, 그래서 더 아쉬운 것 같아. 앞으로 30대가 되고, 40대가 되고, 더 나이가 들어가면서도 지금처럼 서로의 소식을 듣고 웃을 수 있었으면 좋겠어.</p>
+        <p>그렇다고 이제 멀리 떨어져 산다고 해서 우리 사이가 달라질 거라고 생각하지는 않아. 연락이 조금 뜸해질 수도 있고, 예전처럼 자주 만나지는 못하겠지만 그렇다고 우리가 함께했던 시간이나 우정이 사라지는 건 아니니까.</p>
+        <p>가끔은 서로의 일상을 공유하고, 좋은 일이 생기면 제일 먼저 축하해 주고, 힘든 일이 있으면 언제든 편하게 연락할 수 있는 사이로 오래 남았으면 좋겠어.</p>
+        <p>그리고 앞으로 네 앞에 펼쳐질 모든 날들이 지금보다 더 행복했으면 좋겠다. 새로운 시작을 하는 만큼 좋은 사람들도 많이 만나고, 하고 싶은 일들도 하나씩 이루면서 살았으면 좋겠어.</p>
+        <p>혹시 생각처럼 일이 잘 풀리지 않는 날이 오더라도 너무 걱정하지 않았으면 해. 지금까지 그래왔던 것처럼 너는 또 잘해낼 거라고 믿어. 인생이 항상 계획대로 흘러가지는 않겠지만, 결국에는 좋은 날들이 찾아올 거라고 믿고 싶어.</p>
+        <p>우리 아직 같이 가야 할 곳도 많고, 해야 할 것도 많잖아. 태국에서도 만나고, 시안도 같이 가고, 앞으로도 새로운 추억 많이 만들자. 나중에는 지금 이 순간도 웃으면서 이야기할 수 있겠지? ㅋㅋㅋ</p>
+        <p>나의 20대를 함께 보내줘서 고맙고, 앞으로 다가올 30대와 40대, 그리고 그 이후의 시간까지도 우리 오래오래 함께하자.</p>
+        <p>이건 끝이 아니라 그냥 우리의 다음 페이지가 시작되는 거라고 생각할게.</p>
+        <p>어디에 있든 건강하고, 행복하고, 하고 싶은 일 모두 잘되길 바라.</p>
+
+        <div class="letter-footer">
+          우리 거리와 상관없이 계속되는 걸로! ❤️<br><br>
+          - 윈트가 -
+        </div>
+      </div>
+
+      <footer>
+        Made with Love for Twotwo 💕
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- BGM 오디오 (이무진 - 청춘만화) -->
+  <div id="musicContainer"></div>
+
+  <!-- 사진 확대 모달 -->
+  <div class="modal" id="photoModal" onclick="closeModal()">
+    <img id="modalImg" src="" alt="확대 사진">
+  </div>
+
+  <script>
+    // 배경 하트 생성
+    const bgHearts = document.getElementById('bgHearts');
+    const hearts = ['🤍', '🌸', '✨', '💖', '☁️'];
+    for (let i = 0; i < 25; i++) {
+      const heart = document.createElement('div');
+      heart.className = 'heart-particle';
+      heart.innerText = hearts[Math.floor(Math.random() * hearts.length)];
+      heart.style.left = Math.random() * 100 + '%';
+      heart.style.animationDelay = Math.random() * 8 + 's';
+      heart.style.fontSize = (0.8 + Math.random() * 0.8) + 'rem';
+      bgHearts.appendChild(heart);
+    }
+
+    // 편지 열기 실행 함수
+    function openLetter() {
+      const envelope = document.getElementById('envelope');
+      const envelopeScreen = document.getElementById('envelopeScreen');
+      const contentScreen = document.getElementById('contentScreen');
+      const musicContainer = document.getElementById('musicContainer');
+
+      // 1. 봉투 열림 애니메이션
+      envelope.classList.add('open');
+
+      // 2. 이무진 - 청춘만화 BGM 재생 (유튜브 임베드 자동재생)
+      musicContainer.innerHTML = `<iframe width="0" height="0" src="https://www.youtube.com/embed/_xFQKWlYv3k?autoplay=1&loop=1&playlist=_xFQKWlYv3k" title="BGM" frameborder="0" allow="autoplay"></iframe>`;
+
+      // 3. 화면 전환
+      setTimeout(() => {
+        envelopeScreen.classList.add('hidden');
+        contentScreen.classList.add('visible');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 800);
+    }
+
+    // 사진 확대 모달
+    function openModal(src) {
+      const modal = document.getElementById('photoModal');
+      const modalImg = document.getElementById('modalImg');
+      modalImg.src = src;
+      modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('photoModal').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
